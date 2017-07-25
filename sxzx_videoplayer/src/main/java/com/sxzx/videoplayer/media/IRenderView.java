@@ -44,6 +44,9 @@ public interface IRenderView {
 
     void setVideoRotation(int degree);
 
+    /**
+     * 设置播放区域拉伸类型
+     */
     void setAspectRatio(int aspectRatio);
 
     void addRenderCallback(@NonNull IRenderCallback callback);
