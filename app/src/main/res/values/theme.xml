@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--标题栏透明-->
+    <style name="Base.TransParent" parent="Base.AppTheme">
+    </style>
+
+    <style name="Base.AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+    </style>
+
+    <!--基本主题-->
+    <style name="SXZXTheme" parent="Base.AppTheme">
+    </style>
+
+    <!--全屏主题-->
+    <style name="SXZXThemeFull" parent="Base.AppTheme">
+        <!-- AppCompat主题 全屏方法 -->
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!--侧栏顶部完全透明主题-->
+    <style name="SXZXThemeTransParent" parent="Base.TransParent">
+    </style>
+
+    <!--全屏渐进渐出动画主题-->
+    <style name="SXZXThemeFullWithAlpha" parent="Base.AppTheme">
+        <!-- AppCompat主题 全屏方法 -->
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+</resources>
