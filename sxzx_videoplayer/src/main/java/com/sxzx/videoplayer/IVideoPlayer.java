@@ -5,7 +5,10 @@ package com.sxzx.videoplayer;
  */
 
 public interface IVideoPlayer {
+
     void pause();
+
+    void stop();
 
     void play();
 
@@ -15,5 +18,8 @@ public interface IVideoPlayer {
     //是否是直播
     IVideoPlayer isLive(boolean isLive);
 
-    IVideoPlayer canFullScreen(boolean canFullScreen);
+    interface OnPlayerViewOnClickListener{
+        void back();
+        void fullScreen();
+    }
 }

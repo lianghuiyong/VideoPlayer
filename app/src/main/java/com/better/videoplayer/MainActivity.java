@@ -9,16 +9,15 @@ public class MainActivity extends AppCompatActivity {
     private String url1 = "http://1252602955.vod2.myqcloud.com/e56d0644vodgzp1252602955/772a18949031868222899077374/f0.mp4";
 
 
-    VideoPlayerView videoView;
+    VideoPlayerView video;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        videoView = (VideoPlayerView) findViewById(R.id.video_view);
+        video = (VideoPlayerView) findViewById(R.id.video_view);
 
-        videoView.setPath(url1)
-                .play();
+        video.setPath(url1).play();
     }
 
 }

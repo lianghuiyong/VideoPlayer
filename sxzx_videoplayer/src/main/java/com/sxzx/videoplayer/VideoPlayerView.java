@@ -7,9 +7,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.github.rubensousa.previewseekbar.PreviewSeekBar;
 import com.socks.library.KLog;
 import com.sxzx.videoplayer.media.IjkVideoView;
 
@@ -20,63 +22,28 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * Created by lianghuiyong on 2017/7/26.
  */
 
-public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
+public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
     private final String TAG = VideoPlayerView.class.getSimpleName();
-
-    private View view;
-    private Context context;
-
-    /**
-     * 控制主页面
-     */
-    private FrameLayout rootLayout;
-
-    /**
-     * 是否是直播
-     */
-    private boolean isLive = false;
-
-    /**
-     * 是否可以全屏，默认全屏
-     */
-    private boolean canFullscreen = true;
-
-    /**
-     * 播放进度
-     */
-    private int progress = 0;
-
-    /**
-     * 播放地址
-     */
-    private String path;
-
-    private IjkVideoView videoView;
-    private ProgressBar loading;
 
     public VideoPlayerView(Context context) {
         super(context);
-        init(context);
     }
 
     public VideoPlayerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        init(context);
     }
 
-    public VideoPlayerView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(context);
-    }
-
-    private void init(Context context) {
-        this.context = context;
+    @Override
+    protected void init(Context context) {
+        super.context = context;
         view = LayoutInflater.from(context).inflate(R.layout.base_layout_videoplayer, this);
-
         rootLayout = (FrameLayout) view.findViewById(R.id.base_video_root_layout);
+        controlLayout = (FrameLayout) view.findViewById(R.id.base_video_control_layout);
         videoView = (IjkVideoView) view.findViewById(R.id.base_video_view);
         loading = (ProgressBar) view.findViewById(R.id.base_video_loading);
-
+        videoPlay = (ImageView) view.findViewById(R.id.base_video_play);
+        videoTime = (TextView) view.findViewById(R.id.base_video_time);
+        seekBar = (PreviewSeekBar) view.findViewById(R.id.seekBar);
 
         if (view.isInEditMode()) {
             return;
@@ -86,20 +53,59 @@ public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
             IjkMediaPlayer.loadLibrariesOnce(null);
             IjkMediaPlayer.native_profileBegin("libijkplayer.so");
         } catch (Throwable e) {
-            Log.e(TAG, "loadLibraries error", e);
+            Log.e(TAG, "load IjkMediaPlayer error", e);
         }
 
-
-        videoView.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
+        rootLayout.setOnClickListener(new OnClickListener() {
             @Override
-            public void onPrepared(IMediaPlayer iMediaPlayer) {
-                KLog.e("onPrepared");
+            public void onClick(View v) {
+                if (controlLayout.getVisibility() == VISIBLE) {
+                    hideRootLayout();
+                } else {
+                    showRootLayout();
+                }
+            }
+        });
+
+
+        videoPlay.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (videoView.isPlaying()) {
+                    if (isLive) {
+                        videoView.stopPlayback();
+                    } else {
+                        pause();
+                    }
+                    videoPlay.setImageResource(R.drawable.ic_play);
+                } else {
+                    videoPlay.setImageResource(R.drawable.ic_pause);
+                    play();
+                }
+            }
+        });
+
+        view.findViewById(R.id.base_video_back).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.back();
+                }
+            }
+        });
+
+        view.findViewById(R.id.base_video_full_screen).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.fullScreen();
+                }
             }
         });
 
         videoView.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
             @Override
-            public boolean onInfo(IMediaPlayer iMediaPlayer, int i, int i1) {
+            public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int i1) {
 
                 /**
                  int MEDIA_INFO_UNKNOWN = 1;//未知信息
@@ -128,7 +134,7 @@ public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
                  int MEDIA_ERROR_UNSUPPORTED = -1010;//数据不支持
                  int MEDIA_ERROR_TIMED_OUT = -110;//数据超时
                  * */
-                switch (i) {
+                switch (what) {
                     case IMediaPlayer.MEDIA_INFO_VIDEO_TRACK_LAGGING:
                         KLog.e("onInfo = ", "MEDIA_INFO_VIDEO_TRACK_LAGGING:");
                         break;
@@ -136,6 +142,8 @@ public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
                     //视频准备渲染
                     case IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
                         KLog.e("onInfo = ", "MEDIA_INFO_VIDEO_RENDERING_START:");
+
+                        videoPlay.setImageResource(R.drawable.ic_pause);
                         hideLoading();
                         break;
 
@@ -175,6 +183,7 @@ public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
                     case IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
                         KLog.e("onInfo = ", "MEDIA_INFO_VIDEO_ROTATION_CHANGED: ");
                         break;
+
                     case IMediaPlayer.MEDIA_INFO_AUDIO_RENDERING_START:
                         KLog.e("onInfo = ", "MEDIA_INFO_AUDIO_RENDERING_START:");
                         break;
@@ -186,26 +195,60 @@ public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
 
     @Override
     public void pause() {
+        videoView.pause();
+        setProgress(videoView.getCurrentPosition());
+        showRootLayout();
+        stopSync();
+    }
 
+    @Override
+    public void stop() {
+        videoView.stopPlayback();
+        showRootLayout();
+        stopSync();
     }
 
     @Override
     public void play() {
         videoView.setVideoPath(path);
-        videoView.seekTo(progress);
+        if (!isLive) {
+            videoView.seekTo(progress);
+        }
         videoView.start();
         showLoading();
+        hideRootLayout();
+        startSync();
     }
 
-    private void hide() {
-        if (rootLayout != null) {
-            rootLayout.setVisibility(GONE);
+    /**
+     * 每一秒更新进度
+     */
+    @Override
+    protected void syncProgress() {
+        long position = videoView.getCurrentPosition();
+        long duration = videoView.getDuration();
+        if (seekBar != null) {
+            if (duration > 0) {
+                long pos = 1000L * position / duration;
+                seekBar.setProgress((int) pos);
+            }
+            int percent = videoView.getBufferPercentage();
+            seekBar.setSecondaryProgress(percent * 10);
+        }
+        if (videoTime != null) {
+            videoTime.setText(generateTime(position));
         }
     }
 
-    private void show() {
-        if (rootLayout != null) {
-            rootLayout.setVisibility(VISIBLE);
+    private void hideRootLayout() {
+        if (controlLayout != null) {
+            controlLayout.setVisibility(GONE);
+        }
+    }
+
+    private void showRootLayout() {
+        if (controlLayout != null) {
+            controlLayout.setVisibility(VISIBLE);
         }
     }
 
@@ -218,12 +261,6 @@ public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
     @Override
     public IVideoPlayer isLive(boolean isLive) {
         this.isLive = isLive;
-        return this;
-    }
-
-    @Override
-    public IVideoPlayer canFullScreen(boolean canFullScreen) {
-        this.canFullscreen = canFullScreen;
         return this;
     }
 
@@ -241,5 +278,9 @@ public class VideoPlayerView extends LinearLayout implements IVideoPlayer {
 
     private void setProgress(int progress) {
         this.progress = progress;
+    }
+
+    public void addPlayerViewOnClickListener(OnPlayerViewOnClickListener listener) {
+        this.listener = listener;
     }
 }

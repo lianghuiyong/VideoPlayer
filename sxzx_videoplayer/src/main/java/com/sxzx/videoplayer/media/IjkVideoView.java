@@ -61,6 +61,8 @@ import tv.danmaku.ijk.media.player.misc.IMediaFormat;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
 import tv.danmaku.ijk.media.player.misc.IjkMediaFormat;
 
+import static android.print.PrintJobInfo.STATE_COMPLETED;
+
 
 /**
  * 部分注解来自 ：https://my.oschina.net/u/3491516/blog/967937
@@ -74,11 +76,19 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
     private Uri mUri;
 
     /**
+     * 使用编解码器硬编码还是软编码，true 硬编码 false 为软编码
+     */
+    private boolean usingMediaCodec = true;
+
+    /**
+     * 使用编解码是否自转
+     */
+    private boolean usingMediaCodecAutoRotate = true;
+
+    /**
      * 播放器的一些基本配置
      */
     private Map<String, String> mHeaders;
-
-    // all possible internal states
 
     /**
      * 播放出错
@@ -171,6 +181,11 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
 
     /**
      * 播放缓冲监听
+     */
+    private IBuffListener mIBuffListener;
+
+    /**
+     * 播放缓冲值
      */
     private int mCurrentBufferPercentage;
 
@@ -357,10 +372,6 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                 Log.e(TAG, String.format(Locale.getDefault(), "invalid render %d\n", render));
                 break;
         }
-    }
-
-    public void setHudView(TableLayout tableLayout) {
-        //mHudViewHolder = new InfoHudViewHolder(getContext(), tableLayout);
     }
 
     /**
@@ -600,6 +611,9 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                     if (mOnCompletionListener != null) {
                         mOnCompletionListener.onCompletion(mMediaPlayer);
                     }
+                    if (mOnInfoListener != null) {
+                        mOnInfoListener.onInfo(mMediaPlayer, STATE_COMPLETED, 0);
+                    }
                 }
             };
 
@@ -710,6 +724,10 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
             new IMediaPlayer.OnBufferingUpdateListener() {
                 public void onBufferingUpdate(IMediaPlayer mp, int percent) {
                     mCurrentBufferPercentage = percent;
+
+                    if (mIBuffListener != null){
+                        mIBuffListener.bufferingPercent(percent);
+                    }
                 }
             };
 
@@ -729,6 +747,13 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
             }
         }
     };
+
+    /**
+     * 播放缓存
+     */
+    public void setOnBufferingListener(IBuffListener l) {
+        mIBuffListener = l;
+    }
 
     /**
      * Register a callback to be invoked when the media file
@@ -1168,9 +1193,9 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                     ijkMediaPlayer = new IjkMediaPlayer();
                     ijkMediaPlayer.native_setLogLevel(IjkMediaPlayer.IJK_LOG_DEBUG);
 
-                    if (mSettings.getUsingMediaCodec()) {
+                    if (usingMediaCodec) {
                         ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
-                        if (mSettings.getUsingMediaCodecAutoRotate()) {
+                        if (usingMediaCodecAutoRotate) {
                             ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 1);
                         } else {
                             ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 0);
