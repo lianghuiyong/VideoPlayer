@@ -2,6 +2,7 @@ package com.sxzx.videoplayer;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatSeekBar;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,9 +10,9 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.github.rubensousa.previewseekbar.PreviewSeekBar;
 import com.socks.library.KLog;
 import com.sxzx.videoplayer.media.IjkVideoView;
 
@@ -22,7 +23,7 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer;
  * Created by lianghuiyong on 2017/7/26.
  */
 
-public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
+public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View.OnClickListener {
     private final String TAG = VideoPlayerView.class.getSimpleName();
 
     public VideoPlayerView(Context context) {
@@ -43,7 +44,7 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
         loading = (ProgressBar) view.findViewById(R.id.base_video_loading);
         videoPlay = (ImageView) view.findViewById(R.id.base_video_play);
         videoTime = (TextView) view.findViewById(R.id.base_video_time);
-        seekBar = (PreviewSeekBar) view.findViewById(R.id.seekBar);
+        seekBar = (AppCompatSeekBar) view.findViewById(R.id.seekBar);
 
         if (view.isInEditMode()) {
             return;
@@ -56,84 +57,38 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
             Log.e(TAG, "load IjkMediaPlayer error", e);
         }
 
-        rootLayout.setOnClickListener(new OnClickListener() {
+        rootLayout.setOnClickListener(this);
+        videoPlay.setOnClickListener(this);
+        view.findViewById(R.id.base_video_back).setOnClickListener(this);
+        view.findViewById(R.id.base_video_full_screen).setOnClickListener(this);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            private long mTargetPosition;
             @Override
-            public void onClick(View v) {
-                if (controlLayout.getVisibility() == VISIBLE) {
-                    hideRootLayout();
-                } else {
-                    showRootLayout();
-                }
+            public void onStartTrackingTouch(SeekBar bar) {
+                stopSync();
             }
-        });
 
-
-        videoPlay.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v) {
-                if (videoView.isPlaying()) {
-                    if (isLive) {
-                        videoView.stopPlayback();
-                    } else {
-                        pause();
-                    }
-                    videoPlay.setImageResource(R.drawable.ic_play);
-                } else {
-                    videoPlay.setImageResource(R.drawable.ic_pause);
-                    play();
+            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
+                if (!fromUser) {
+                    return;
                 }
+
+                long duration = videoView.getDuration();
+                // 计算目标位置
+                mTargetPosition = (duration * progress) / seekBar.getMax();
+                videoTime.setText(generateTime(mTargetPosition) + "/" + generateTime(duration));
             }
-        });
 
-        view.findViewById(R.id.base_video_back).setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v) {
-                if (listener != null) {
-                    listener.back();
-                }
-            }
-        });
-
-        view.findViewById(R.id.base_video_full_screen).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (listener != null) {
-                    listener.fullScreen();
-                }
+            public void onStopTrackingTouch(SeekBar bar) {
+                seekTo((int) mTargetPosition);
             }
         });
 
         videoView.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
             @Override
             public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int i1) {
-
-                /**
-                 int MEDIA_INFO_UNKNOWN = 1;//未知信息
-                 int MEDIA_INFO_STARTED_AS_NEXT = 2;//播放下一条
-                 int MEDIA_INFO_VIDEO_RENDERING_START = 3;//视频开始整备中
-                 int MEDIA_INFO_VIDEO_TRACK_LAGGING = 700;//视频日志跟踪
-                 int MEDIA_INFO_BUFFERING_START = 701;//开始缓冲中
-                 int MEDIA_INFO_BUFFERING_END = 702;//缓冲结束
-                 int MEDIA_INFO_NETWORK_BANDWIDTH = 703;//网络带宽，网速方面
-                 int MEDIA_INFO_BAD_INTERLEAVING = 800;//
-                 int MEDIA_INFO_NOT_SEEKABLE = 801;//不可设置播放位置，直播方面
-                 int MEDIA_INFO_METADATA_UPDATE = 802;//
-                 int MEDIA_INFO_TIMED_TEXT_ERROR = 900;
-                 int MEDIA_INFO_UNSUPPORTED_SUBTITLE = 901;//不支持字幕
-                 int MEDIA_INFO_SUBTITLE_TIMED_OUT = 902;//字幕超时
-
-                 int MEDIA_INFO_VIDEO_INTERRUPT= -10000;//数据连接中断
-                 int MEDIA_INFO_VIDEO_ROTATION_CHANGED = 10001;//视频方向改变
-                 int MEDIA_INFO_AUDIO_RENDERING_START = 10002;//音频开始整备中
-
-                 int MEDIA_ERROR_UNKNOWN = 1;//未知错误
-                 int MEDIA_ERROR_SERVER_DIED = 100;//服务挂掉
-                 int MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 200;//数据错误没有有效的回收
-                 int MEDIA_ERROR_IO = -1004;//IO错误
-                 int MEDIA_ERROR_MALFORMED = -1007;
-                 int MEDIA_ERROR_UNSUPPORTED = -1010;//数据不支持
-                 int MEDIA_ERROR_TIMED_OUT = -110;//数据超时
-                 * */
                 switch (what) {
                     case IMediaPlayer.MEDIA_INFO_VIDEO_TRACK_LAGGING:
                         KLog.e("onInfo = ", "MEDIA_INFO_VIDEO_TRACK_LAGGING:");
@@ -142,9 +97,8 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
                     //视频准备渲染
                     case IMediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START:
                         KLog.e("onInfo = ", "MEDIA_INFO_VIDEO_RENDERING_START:");
-
-                        videoPlay.setImageResource(R.drawable.ic_pause);
                         hideLoading();
+                        videoPlay.setImageResource(R.drawable.ic_pause);
                         break;
 
                     //开始缓冲
@@ -157,7 +111,6 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
                         KLog.e("onInfo = ", "MEDIA_INFO_BUFFERING_END:");
                         break;
 
-
                     case IMediaPlayer.MEDIA_INFO_NETWORK_BANDWIDTH:
                         KLog.e("onInfo = ", "MEDIA_INFO_NETWORK_BANDWIDTH: ");
                         break;
@@ -169,6 +122,7 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
                     case IMediaPlayer.MEDIA_INFO_NOT_SEEKABLE:
                         KLog.e("onInfo = ", "MEDIA_INFO_NOT_SEEKABLE:");
                         break;
+
                     case IMediaPlayer.MEDIA_INFO_METADATA_UPDATE:
                         KLog.e("onInfo = ", "MEDIA_INFO_METADATA_UPDATE:");
                         break;
@@ -196,27 +150,35 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
     @Override
     public void pause() {
         videoView.pause();
-        setProgress(videoView.getCurrentPosition());
-        showRootLayout();
+        videoPlay.setImageResource(R.drawable.ic_play);
+        showRootLayout(true);
         stopSync();
     }
 
     @Override
     public void stop() {
         videoView.stopPlayback();
-        showRootLayout();
+        videoView.stopBackgroundPlay();
+        IjkMediaPlayer.native_profileEnd();
+        showRootLayout(true);
         stopSync();
     }
 
     @Override
     public void play() {
-        videoView.setVideoPath(path);
-        if (!isLive) {
-            videoView.seekTo(progress);
-        }
         videoView.start();
-        showLoading();
-        hideRootLayout();
+        videoPlay.setImageResource(R.drawable.ic_pause);
+        showRootLayout(false);
+        startSync();
+    }
+
+    /**
+     * 跳转
+     *
+     * @param position 位置
+     */
+    public void seekTo(int position) {
+        videoView.seekTo(position);
         startSync();
     }
 
@@ -227,34 +189,32 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
     protected void syncProgress() {
         long position = videoView.getCurrentPosition();
         long duration = videoView.getDuration();
+
         if (seekBar != null) {
             if (duration > 0) {
-                long pos = 1000L * position / duration;
+                long pos = seekBar.getMax() * position / duration;
                 seekBar.setProgress((int) pos);
             }
+
             int percent = videoView.getBufferPercentage();
             seekBar.setSecondaryProgress(percent * 10);
         }
+
         if (videoTime != null) {
-            videoTime.setText(generateTime(position));
+            videoTime.setText(generateTime(position) + "/" + generateTime(duration));
         }
     }
 
-    private void hideRootLayout() {
+    private void showRootLayout(boolean isShow) {
         if (controlLayout != null) {
-            controlLayout.setVisibility(GONE);
-        }
-    }
-
-    private void showRootLayout() {
-        if (controlLayout != null) {
-            controlLayout.setVisibility(VISIBLE);
+            controlLayout.setVisibility(isShow ? VISIBLE : GONE);
         }
     }
 
     @Override
     public IVideoPlayer setPath(String path) {
         this.path = path;
+        videoView.setVideoPath(path);
         return this;
     }
 
@@ -282,5 +242,27 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer {
 
     public void addPlayerViewOnClickListener(OnPlayerViewOnClickListener listener) {
         this.listener = listener;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int i = v.getId();
+        if (i == R.id.base_video_root_layout) {
+            showRootLayout(controlLayout.getVisibility() != VISIBLE);
+        } else if (i == R.id.base_video_play) {
+            if (videoView != null && videoView.isPlaying()) {
+                pause();
+            } else {
+                play();
+            }
+        } else if (i == R.id.base_video_back) {
+            if (listener != null) {
+                listener.back();
+            }
+        } else if (i == R.id.base_video_full_screen) {
+            if (listener != null) {
+                listener.fullScreen();
+            }
+        }
     }
 }

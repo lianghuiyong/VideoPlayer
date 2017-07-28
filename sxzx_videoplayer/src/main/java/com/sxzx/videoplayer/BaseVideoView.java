@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatSeekBar;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -13,8 +14,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.github.rubensousa.previewseekbar.PreviewSeekBar;
 import com.sxzx.videoplayer.media.IjkVideoView;
+
+import java.util.Locale;
 
 /**
  * Created by lianghuiyong on 2017/7/27.
@@ -62,7 +64,7 @@ public abstract class BaseVideoView extends LinearLayout {
 
     protected IjkVideoView videoView;
     protected ProgressBar loading;
-    protected PreviewSeekBar seekBar;
+    protected AppCompatSeekBar seekBar;
 
     /**
      * 按键监听回调
@@ -89,29 +91,38 @@ public abstract class BaseVideoView extends LinearLayout {
             switch (msg.what) {
                 case SYNC_PROGRESS:
                     syncProgress();
-                    sendEmptyMessageDelayed(SYNC_PROGRESS,1000);
+                    sendEmptyMessageDelayed(SYNC_PROGRESS, 1000);
             }
         }
     };
 
-    protected void startSync(){
+    protected void startSync() {
         mHandler.removeMessages(SYNC_PROGRESS);
         mHandler.sendEmptyMessageDelayed(SYNC_PROGRESS, 1000);
     }
 
-    protected void stopSync(){
+    protected void stopSync() {
         mHandler.removeMessages(SYNC_PROGRESS);
     }
 
     /**
      * 时长格式化显示
      */
-    protected String generateTime(long time) {
-        int totalSeconds = (int) (time / 1000);
-        int seconds = totalSeconds % 60;
-        int minutes = (totalSeconds / 60) % 60;
-        int hours = totalSeconds / 3600;
-        return hours > 0 ? String.format("%02d:%02d:%02d", hours, minutes, seconds) : String.format("%02d:%02d", minutes, seconds);
+    protected String generateTime(long duration) {
+        long total_seconds = duration / 1000;
+        long hours = total_seconds / 3600;
+        long minutes = (total_seconds % 3600) / 60;
+        long seconds = total_seconds % 60;
+        if (duration <= 0) {
+            return "00:00";
+        }
+        if (hours >= 100) {
+            return String.format(Locale.US, "%d:%02d:%02d", hours, minutes, seconds);
+        } else if (hours > 0) {
+            return String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds);
+        } else {
+            return String.format(Locale.US, "%02d:%02d", minutes, seconds);
+        }
     }
 
     /**
@@ -129,5 +140,6 @@ public abstract class BaseVideoView extends LinearLayout {
     }
 
     protected abstract void syncProgress();
+
     protected abstract void init(Context context);
 }
