@@ -3,17 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/img_back"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content" />
 
-        <com.sxzx.videoplayer.media.IjkVideoView
-            android:id="@+id/base_video_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
+    <com.sxzx.videoplayer.media.IjkVideoView
+        android:id="@+id/base_video_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <ProgressBar
         android:id="@+id/base_video_loading"
@@ -81,18 +79,18 @@
                         android:layout_gravity="bottom"
                         android:paddingBottom="7dp"
                         android:paddingLeft="5dp"
-                        android:textSize="11sp"
                         android:text="00:00/00:00"
-                        android:textColor="@android:color/white" />
+                        android:textColor="@android:color/white"
+                        android:textSize="11sp" />
 
                     <android.support.v7.widget.AppCompatSeekBar
                         android:id="@+id/seekBar"
-                        android:layout_weight="1"
                         android:layout_width="0dp"
                         android:layout_height="30dp"
                         android:layout_gravity="bottom"
-                        android:thumbOffset="3dp"
-                        android:max="1000"/>
+                        android:layout_weight="1"
+                        android:max="1000"
+                        android:thumbOffset="3dp" />
 
                     <ImageView
                         android:id="@+id/base_video_full_screen"

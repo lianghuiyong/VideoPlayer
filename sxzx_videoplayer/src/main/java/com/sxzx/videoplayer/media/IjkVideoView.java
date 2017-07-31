@@ -36,7 +36,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.MediaController;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.sxzx.videoplayer.R;
@@ -55,11 +54,8 @@ import tv.danmaku.ijk.media.player.AndroidMediaPlayer;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 import tv.danmaku.ijk.media.player.IjkTimedText;
-import tv.danmaku.ijk.media.player.TextureMediaPlayer;
 import tv.danmaku.ijk.media.player.misc.IMediaDataSource;
-import tv.danmaku.ijk.media.player.misc.IMediaFormat;
 import tv.danmaku.ijk.media.player.misc.ITrackInfo;
-import tv.danmaku.ijk.media.player.misc.IjkMediaFormat;
 
 import static android.print.PrintJobInfo.STATE_COMPLETED;
 
@@ -273,21 +269,12 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         // REMOVED: getHolder().addCallback(mSHCallback);
         // REMOVED: getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         /** 设置为可触摸并且获取焦点 */
-        setFocusable(true);
-        setFocusableInTouchMode(true);
-        requestFocus();
+        //setFocusable(true);
+        //setFocusableInTouchMode(true);
+        //requestFocus();
         // REMOVED: mPendingSubtitleTracks = new Vector<Pair<InputStream, MediaFormat>>();
         mCurrentState = STATE_IDLE;
         mTargetState = STATE_IDLE;
-
-        subtitleDisplay = new TextView(context);
-        subtitleDisplay.setTextSize(24);
-        subtitleDisplay.setGravity(Gravity.CENTER);
-        FrameLayout.LayoutParams layoutParams_txt = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM);
-        addView(subtitleDisplay, layoutParams_txt);
     }
 
     /**
@@ -320,8 +307,8 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
 
         View renderUIView = mRenderView.getView();
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT,
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER);
         renderUIView.setLayoutParams(lp);
         addView(renderUIView);
@@ -447,7 +434,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
         try {
-            mMediaPlayer = createPlayer(mSettings.getPlayer());
+            mMediaPlayer = createPlayer(Settings.PV_PLAYER__AndroidMediaPlayer);
 
             // TODO: create SubtitleController in MediaPlayer, but we need
             // a context for the subtitle renderers
@@ -1097,12 +1084,12 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
     private void initRenders() {
         mAllRenders.clear();
 
-        if (mSettings.getEnableSurfaceView())
+/*        if (mSettings.getEnableSurfaceView())
             mAllRenders.add(RENDER_SURFACE_VIEW);
         if (mSettings.getEnableTextureView() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH)
             mAllRenders.add(RENDER_TEXTURE_VIEW);
         if (mSettings.getEnableNoView())
-            mAllRenders.add(RENDER_NONE);
+            mAllRenders.add(RENDER_NONE);*/
 
         if (mAllRenders.isEmpty())
             mAllRenders.add(RENDER_SURFACE_VIEW);
@@ -1231,10 +1218,6 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
                 mediaPlayer = ijkMediaPlayer;
             }
             break;
-        }
-
-        if (mSettings.getEnableDetachedSurfaceTextureView()) {
-            mediaPlayer = new TextureMediaPlayer(mediaPlayer);
         }
 
         return mediaPlayer;
