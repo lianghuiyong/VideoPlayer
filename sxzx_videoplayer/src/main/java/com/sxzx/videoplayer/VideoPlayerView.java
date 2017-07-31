@@ -7,12 +7,14 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.socks.library.KLog;
 import com.sxzx.videoplayer.media.IjkVideoView;
 
@@ -214,7 +216,9 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
     @Override
     public IVideoPlayer setPath(String path) {
         this.path = path;
-        videoView.setVideoPath(path);
+        HttpProxyCacheServer cacheServer = VideoCacheUtils.getInstance().getProxy(context);
+        String url = cacheServer.getProxyUrl(path);
+        videoView.setVideoPath(url);
         return this;
     }
 
