@@ -34,13 +34,18 @@ public class MainActivity extends AppCompatActivity {
 
         video.addPlayerViewOnClickListener(new IVideoPlayer.OnPlayerViewOnClickListener() {
             @Override
-            public void back() {
+            public void onBack() {
                 onBackPressed();
             }
 
             @Override
-            public void fullScreen() {
+            public void onFullScreen() {
                 toFullScreen();
+            }
+
+            @Override
+            public float onBrightness(float percent) {
+                return setBrightness(percent);
             }
         });
     }
@@ -142,5 +147,18 @@ public class MainActivity extends AppCompatActivity {
 
         //关闭屏幕常亮
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    private float setBrightness(float percent){
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+
+        lp.screenBrightness = lp.screenBrightness + percent;
+        if (lp.screenBrightness > 1) {
+            lp.screenBrightness = 1;
+        } else if (lp.screenBrightness < 0.1) {
+            lp.screenBrightness = (float) 0.1;
+        }
+        getWindow().setAttributes(lp);
+        return lp.screenBrightness;
     }
 }

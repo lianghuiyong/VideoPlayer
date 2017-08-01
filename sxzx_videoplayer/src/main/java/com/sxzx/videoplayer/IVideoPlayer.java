@@ -18,8 +18,11 @@ public interface IVideoPlayer {
     //是否是直播
     IVideoPlayer isLive(boolean isLive);
 
-    interface OnPlayerViewOnClickListener{
-        void back();
-        void fullScreen();
+    interface OnPlayerViewOnClickListener {
+        void onBack();
+
+        void onFullScreen();
+
+        float onBrightness(float percent);
     }
 }

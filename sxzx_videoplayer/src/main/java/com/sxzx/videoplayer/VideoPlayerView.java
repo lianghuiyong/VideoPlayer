@@ -364,11 +364,11 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
             }
         } else if (i == R.id.base_video_back) {
             if (listener != null) {
-                listener.back();
+                listener.onBack();
             }
         } else if (i == R.id.base_video_full_screen) {
             if (listener != null) {
-                listener.fullScreen();
+                listener.onFullScreen();
             }
         }
     }
@@ -404,7 +404,7 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             if (listener != null) {
-                listener.fullScreen();
+                listener.onFullScreen();
             }
             return super.onDoubleTap(e);
         }
@@ -512,6 +512,13 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
 
     //设置亮度值
     protected void setBrightnessSlide(float percent) {
-        KLog.e("setBrightnessSlide = " + percent);
+        float brightVolume = 0;
+        if (listener != null) {
+            brightVolume = listener.onBrightness(percent);
+        }
+
+        touchLayout.setVisibility(VISIBLE);
+        touchImage.setImageResource(R.drawable.ic_brightness);
+        touchVolume.setText((int) (brightVolume * 100) + "%");
     }
 }
