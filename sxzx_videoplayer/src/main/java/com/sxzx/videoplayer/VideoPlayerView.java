@@ -59,6 +59,9 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
         videoPlay = (ImageView) view.findViewById(R.id.base_video_play);
         videoTime = (TextView) view.findViewById(R.id.base_video_time);
         seekBar = (AppCompatSeekBar) view.findViewById(R.id.seekBar);
+        touchLayout = (FrameLayout) view.findViewById(R.id.touch_layout);
+        touchImage = (ImageView) view.findViewById(R.id.touch_image);
+        touchVolume = (TextView) view.findViewById(R.id.touch_volume);
 
         if (view.isInEditMode()) {
             return;
@@ -82,13 +85,18 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
                 // 处理手势结束
                 switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
                     case MotionEvent.ACTION_UP:
-                        KLog.e("MotionEvent.ACTION_UP");
-                        KLog.e(mMoveProgress);
+                        mHandler.sendEmptyMessageDelayed(HIDE_TOUCH_LAYOUT, 1000);
                         if (mMoveProgress != 0) {
                             seekTo(mMoveProgress * seekBar.getMax());
                             mMoveProgress = 0;
                             return true;
                         }
+
+                        if (isTouch) {
+                            isTouch = false;
+                            return true;
+                        }
+
                         break;
                 }
                 return false;
@@ -98,6 +106,13 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
         videoPlay.setOnClickListener(this);
         view.findViewById(R.id.base_video_back).setOnClickListener(this);
         view.findViewById(R.id.base_video_full_screen).setOnClickListener(this);
+
+        setListener();
+
+        showLoading();
+    }
+
+    protected void setListener() {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             private long mTargetPosition;
 
@@ -124,10 +139,6 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
             }
         });
 
-        setInfoListener();
-    }
-
-    protected void setInfoListener() {
         videoView.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
             @Override
             public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int i1) {
@@ -263,14 +274,15 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
         long pos = seekBar.getMax() * progress / duration;
         seekBar.setProgress((int) pos);
 
-
         // 对比当前位置来显示快进或后退
         videoTime.setText(generateTime(progress) + "/" + generateTime(duration));
 
         //快进快退时间
         int deltaTime = (int) ((progress - position) / 1000);
 
-        KLog.e((deltaTime > 0 ? "快进" : "快退") + deltaTime + "秒");
+        touchImage.setImageResource(deltaTime > 0 ? R.drawable.ic_quick : R.drawable.ic_rewind);
+        touchVolume.setText(deltaTime + "秒");
+        touchLayout.setVisibility(VISIBLE);
 
         return (int) pos;
     }
@@ -342,6 +354,7 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
     public void onClick(View v) {
         int i = v.getId();
         if (i == R.id.base_video_root_layout) {
+            videoPlay.setVisibility(controlLayout.getVisibility() != VISIBLE ? VISIBLE : GONE);
             showRootLayout(controlLayout.getVisibility() != VISIBLE);
         } else if (i == R.id.base_video_play) {
             if (videoView != null && videoView.isPlaying()) {
@@ -409,11 +422,18 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
                 isDownTouch = false;
             }
 
+            videoPlay.setVisibility(GONE);
+
+            //手势操作标记true
+            isTouch = true;
+
             if (isLandscape) {
                 //快进或者快退
                 mMoveProgress = setProgressSlide(-deltaX / videoView.getWidth());
             } else {
-                float percent = deltaY / videoView.getHeight();
+                KLog.e(deltaY);
+                float percent = deltaY / videoView.getHeight() / 4;
+                KLog.e(percent);
                 if (isVolume) {
                     setVolumeSlide(percent);
                 } else {
@@ -456,22 +476,38 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
 
     //更新音量值
     protected void setVolumeSlide(float percent) {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
-        KLog.e("setVolumeSlide = " + percent);
-/*        if (mCurVolume == INVALID_VALUE) {
-            mCurVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-            if (mCurVolume < 0) {
-                mCurVolume = 0;
-            }
+        int volume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        if (volume < 0) {
+            volume = 0;
         }
-        int index = (int) (percent * mMaxVolume) + mCurVolume;
+
+        int mMaxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        KLog.e(volume);
+
+        int index = (int) (percent * mMaxVolume) + volume;
+        KLog.e(index);
         if (index > mMaxVolume) {
             index = mMaxVolume;
         } else if (index < 0) {
             index = 0;
         }
+        KLog.e(index);
+
         // 变更声音
-        mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0);*/
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0);
+
+        // 变更进度条
+        int i = (int) (index * 1.0 / mMaxVolume * 100);
+        String ret = i + "%";
+        if (i == 0) {
+            ret = "off";
+        }
+
+        touchLayout.setVisibility(VISIBLE);
+        touchImage.setImageResource(ret.equals("off") ? R.drawable.ic_volume_off : R.drawable.ic_volume);
+        touchVolume.setText(ret);
     }
 
     //设置亮度值

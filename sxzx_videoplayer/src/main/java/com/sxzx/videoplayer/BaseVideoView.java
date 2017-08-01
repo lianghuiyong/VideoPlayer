@@ -27,6 +27,9 @@ public abstract class BaseVideoView extends LinearLayout {
     //handler 每隔一秒同步进度
     protected static final int SYNC_PROGRESS = 0;
 
+    //handler 隐藏滑动提示布局
+    protected static final int HIDE_TOUCH_LAYOUT = 1;
+
     protected View view;
     protected Context context;
 
@@ -40,6 +43,16 @@ public abstract class BaseVideoView extends LinearLayout {
      */
     protected FrameLayout controlLayout;
 
+    /**
+     * 控制主页面
+     */
+    protected FrameLayout touchLayout;
+
+    /*是否是手势操作*/
+    protected boolean isTouch = false;
+
+    protected ImageView touchImage;
+    protected TextView touchVolume;
     /**
      * 播放控制按钮
      */
@@ -92,6 +105,10 @@ public abstract class BaseVideoView extends LinearLayout {
                 case SYNC_PROGRESS:
                     syncProgress();
                     sendEmptyMessageDelayed(SYNC_PROGRESS, 1000);
+                    break;
+                case HIDE_TOUCH_LAYOUT:
+                    touchLayout.setVisibility(GONE);
+                    break;
             }
         }
     };
