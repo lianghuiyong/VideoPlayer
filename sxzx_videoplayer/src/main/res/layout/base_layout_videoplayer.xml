@@ -8,31 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <!--播放按钮-->
-    <ImageView
-        android:id="@+id/base_video_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_play"
-        android:visibility="gone" />
-
-    <!--加载UI-->
-    <ProgressBar
-        android:id="@+id/base_video_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-
-    <!--手势控制界面-->
-    <include
-        layout="@layout/base_layout_videoplayer_touch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-
     <!--控制面板-->
     <FrameLayout
         android:id="@+id/base_video_root_layout"
@@ -111,5 +86,31 @@
 
         </FrameLayout>
     </FrameLayout>
+
+    <!--播放按钮-->
+    <ImageView
+        android:id="@+id/base_video_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/ic_play"
+        android:visibility="gone" />
+
+    <!--加载UI-->
+    <ProgressBar
+        android:id="@+id/base_video_loading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!--手势控制界面-->
+    <include
+        layout="@layout/base_layout_videoplayer_touch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
 </FrameLayout>

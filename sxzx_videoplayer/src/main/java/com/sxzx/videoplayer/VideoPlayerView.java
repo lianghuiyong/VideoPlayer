@@ -74,6 +74,45 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
             Log.e(TAG, "load IjkMediaPlayer error", e);
         }
 
+        videoPlay.setOnClickListener(this);
+        view.findViewById(R.id.base_video_play).setOnClickListener(this);
+        view.findViewById(R.id.base_video_back).setOnClickListener(this);
+        view.findViewById(R.id.base_video_full_screen).setOnClickListener(this);
+
+        setListener();
+
+        showLoading();
+    }
+
+    protected void setListener() {
+        //滑动进度监听
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            private long mTargetPosition;
+
+            @Override
+            public void onStartTrackingTouch(SeekBar bar) {
+                stopSync();
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
+                if (!fromUser) {
+                    return;
+                }
+
+                long duration = videoView.getDuration();
+                // 计算目标位置
+                mTargetPosition = (duration * progress) / seekBar.getMax();
+                videoTime.setText(generateTime(mTargetPosition) + "/" + generateTime(duration));
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar bar) {
+                seekTo((int) mTargetPosition);
+            }
+        });
+
+        //手势监听
         final GestureDetector gestureDetector = new GestureDetector(context, new PlayerGestureListener());
         rootLayout.setOnClickListener(this);
         rootLayout.setOnTouchListener(new View.OnTouchListener() {
@@ -103,39 +142,10 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
             }
         });
 
-        videoPlay.setOnClickListener(this);
-        view.findViewById(R.id.base_video_back).setOnClickListener(this);
-        view.findViewById(R.id.base_video_full_screen).setOnClickListener(this);
-
-        setListener();
-
-        showLoading();
-    }
-
-    protected void setListener() {
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            private long mTargetPosition;
-
+        videoView.setOnCompletionListener(new IMediaPlayer.OnCompletionListener() {
             @Override
-            public void onStartTrackingTouch(SeekBar bar) {
-                stopSync();
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
-                if (!fromUser) {
-                    return;
-                }
-
-                long duration = videoView.getDuration();
-                // 计算目标位置
-                mTargetPosition = (duration * progress) / seekBar.getMax();
-                videoTime.setText(generateTime(mTargetPosition) + "/" + generateTime(duration));
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar bar) {
-                seekTo((int) mTargetPosition);
+            public void onCompletion(IMediaPlayer iMediaPlayer) {
+                playEnd();
             }
         });
 
@@ -207,6 +217,13 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
         videoView.pause();
         videoPlay.setImageResource(R.drawable.ic_play);
         showRootLayout(true);
+        stopSync();
+    }
+
+    /*播放结束*/
+    private void playEnd(){
+        videoPlay.setVisibility(VISIBLE);
+        videoPlay.setImageResource(R.drawable.ic_replay);
         stopSync();
     }
 
@@ -484,16 +501,13 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
         }
 
         int mMaxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        KLog.e(volume);
 
         int index = (int) (percent * mMaxVolume) + volume;
-        KLog.e(index);
         if (index > mMaxVolume) {
             index = mMaxVolume;
         } else if (index < 0) {
             index = 0;
         }
-        KLog.e(index);
 
         // 变更声音
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0);

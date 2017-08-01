@@ -434,7 +434,7 @@ public class IjkVideoView extends FrameLayout implements MediaController.MediaPl
         am.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
         try {
-            mMediaPlayer = createPlayer(Settings.PV_PLAYER__AndroidMediaPlayer);
+            mMediaPlayer = createPlayer(Settings.PV_PLAYER__Auto);
 
             // TODO: create SubtitleController in MediaPlayer, but we need
             // a context for the subtitle renderers
