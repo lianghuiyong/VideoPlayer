@@ -34,7 +34,6 @@ public class VideoCacheUtils {
 
     private HttpProxyCacheServer newProxy(Context context) {
         return new HttpProxyCacheServer.Builder(context)
-                .maxCacheSize(200 * 1024 * 1024)       // 400M for cache
                 .build();
     }
 }

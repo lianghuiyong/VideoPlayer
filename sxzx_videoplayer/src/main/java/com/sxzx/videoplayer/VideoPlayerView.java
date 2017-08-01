@@ -149,6 +149,14 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
             }
         });
 
+        videoView.setOnErrorListener(new IMediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(IMediaPlayer iMediaPlayer, int framework_err, int impl_err) {
+                KLog.e("onError");
+                return false;
+            }
+        });
+
         videoView.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
             @Override
             public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int i1) {
@@ -168,11 +176,13 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
                     //开始缓冲
                     case IMediaPlayer.MEDIA_INFO_BUFFERING_START:
                         KLog.e("onInfo = ", "MEDIA_INFO_BUFFERING_START:");
+                        showLoading();
                         break;
 
                     //缓冲结束
                     case IMediaPlayer.MEDIA_INFO_BUFFERING_END:
                         KLog.e("onInfo = ", "MEDIA_INFO_BUFFERING_END:");
+                        hideLoading();
                         break;
 
                     case IMediaPlayer.MEDIA_INFO_NETWORK_BANDWIDTH:
@@ -313,9 +323,9 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
     @Override
     public IVideoPlayer setPath(String path) {
         this.path = path;
-        HttpProxyCacheServer cacheServer = VideoCacheUtils.getInstance().getProxy(context);
-        String url = cacheServer.getProxyUrl(path);
-        videoView.setVideoPath(url);
+        //HttpProxyCacheServer cacheServer = VideoCacheUtils.getInstance().getProxy(context);
+        //String url = cacheServer.getProxyUrl(path);
+        videoView.setVideoPath(path);
         return this;
     }
 
