@@ -14,7 +14,8 @@ import com.sxzx.videoplayer.IVideoPlayer;
 import com.sxzx.videoplayer.VideoPlayerView;
 
 public class MainActivity extends AppCompatActivity {
-    private String url1 = "http://1252602955.vod2.myqcloud.com/e56d0644vodgzp1252602955/772a18949031868222899077374/f0.mp4";
+    //private String url1 = "http://1252602955.vod2.myqcloud.com/e56d0644vodgzp1252602955/772a18949031868222899077374/f0.mp4";
+    private String url1 = "http://www.w3school.com.cn/example/html5/mov_bbb.mp4";
 
     VideoPlayerView video;
 
