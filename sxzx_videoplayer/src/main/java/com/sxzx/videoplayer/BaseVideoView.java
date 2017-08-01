@@ -156,6 +156,22 @@ public abstract class BaseVideoView extends LinearLayout {
         return currentPosition;
     }
 
+    /**
+     * 下载速度格式化显示
+     */
+    protected String getFormatSize(int size) {
+        long fileSize = (long) size;
+        String showSize = "";
+        if (fileSize >= 0 && fileSize < 1024) {
+            showSize = fileSize + "Kb/s";
+        } else if (fileSize >= 1024 && fileSize < (1024 * 1024)) {
+            showSize = Long.toString(fileSize / 1024) + "KB/s";
+        } else if (fileSize >= (1024 * 1024) && fileSize < (1024 * 1024 * 1024)) {
+            showSize = Long.toString(fileSize / (1024 * 1024)) + "MB/s";
+        }
+        return showSize;
+    }
+
     protected abstract void syncProgress();
 
     protected abstract void init(Context context);

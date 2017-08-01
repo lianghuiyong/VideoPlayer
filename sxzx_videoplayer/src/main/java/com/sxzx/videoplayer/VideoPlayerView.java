@@ -159,7 +159,12 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
 
         videoView.setOnInfoListener(new IMediaPlayer.OnInfoListener() {
             @Override
-            public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int i1) {
+            public boolean onInfo(IMediaPlayer iMediaPlayer, int what, int extra) {
+
+/*                if (what == iMediaPlayer.MEDIA_INFO_NETWORK_BANDWIDTH || what == IMediaPlayer.MEDIA_INFO_METADATA_UPDATE) {
+                    KLog.e("", "dou361.====extra=======" + getFormatSize(extra));
+                }*/
+
                 switch (what) {
                     case IMediaPlayer.MEDIA_INFO_VIDEO_TRACK_LAGGING:
                         KLog.e("onInfo = ", "MEDIA_INFO_VIDEO_TRACK_LAGGING:");
@@ -481,8 +486,6 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
             return false;
         }
     }
-
-    ;
 
     //快进快退进度更新
     protected int setProgressSlide(float percent) {
