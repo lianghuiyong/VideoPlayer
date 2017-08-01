@@ -51,9 +51,9 @@ public abstract class BaseVideoView extends LinearLayout {
     protected boolean isLive = false;
 
     /**
-     * 播放进度
+     * 滑动播放进度
      */
-    protected int progress = 0;
+    protected int mMoveProgress = 0;
 
     protected TextView videoTime;
 

@@ -45,6 +45,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        //判断是否横屏
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //设置屏幕为横屏
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     /**
      * 全屏切换，点击全屏按钮
      */
@@ -80,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 );
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+                video.changeHeight(true);
                 onFullSpace();
 
             } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -88,20 +100,21 @@ public class MainActivity extends AppCompatActivity {
                 decorView.setSystemUiVisibility(mScreenUiVisibility);
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+                video.changeHeight(false);
+
                 onLandSpace();
             }
         }
-
     }
 
     //竖屏
     protected void onLandSpace(){
-        findViewById(R.id.navigation).setVisibility(View.VISIBLE);
+        findViewById(R.id.root_layout).setVisibility(View.VISIBLE);
     }
 
     //全屏
     protected void onFullSpace(){
-        findViewById(R.id.navigation).setVisibility(View.GONE);
+        findViewById(R.id.root_layout).setVisibility(View.GONE);
     }
 
     @Override
