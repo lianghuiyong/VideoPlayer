@@ -339,6 +339,8 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
 
     private void showLoading() {
         if (loading != null) {
+            videoPlay.setImageResource(R.drawable.ic_pause);
+            videoPlay.setVisibility(GONE);
             loading.setVisibility(VISIBLE);
         }
     }
