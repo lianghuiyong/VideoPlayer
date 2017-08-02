@@ -3,7 +3,6 @@ package com.sxzx.videoplayer;
 import android.content.Context;
 import android.media.AudioManager;
 import android.support.annotation.Nullable;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -12,14 +11,12 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.danikula.videocache.HttpProxyCacheServer;
 import com.socks.library.KLog;
 import com.sxzx.videoplayer.media.IjkVideoView;
 
