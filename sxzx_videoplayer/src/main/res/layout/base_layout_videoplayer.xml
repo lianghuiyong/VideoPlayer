@@ -87,16 +87,6 @@
         </FrameLayout>
     </FrameLayout>
 
-    <!--播放按钮-->
-    <ImageView
-        android:id="@+id/base_video_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="10dp"
-        android:src="@drawable/ic_play"
-        android:visibility="gone" />
-
     <!--加载UI-->
     <ProgressBar
         android:id="@+id/base_video_loading"
@@ -111,6 +101,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!--播放按钮-->
+    <ImageView
+        android:id="@+id/base_video_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/ic_play"
         android:visibility="gone" />
 
 </FrameLayout>

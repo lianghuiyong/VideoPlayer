@@ -458,14 +458,11 @@ public class VideoPlayerView extends BaseVideoView implements IVideoPlayer, View
 
             //手势操作标记true
             isTouch = true;
-
             if (isLandscape) {
                 //快进或者快退
                 mMoveProgress = setProgressSlide(-deltaX / videoView.getWidth());
             } else {
-                KLog.e(deltaY);
                 float percent = deltaY / videoView.getHeight() / 4;
-                KLog.e(percent);
                 if (isVolume) {
                     setVolumeSlide(percent);
                 } else {
